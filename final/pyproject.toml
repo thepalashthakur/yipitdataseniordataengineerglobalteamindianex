@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yipit-data-engineering-assignment"
+version = "1.0.0"
+description = "Local technology-news ARR modeling and semantic-search pipeline"
+requires-python = ">=3.9"
+dependencies = [
+  "duckdb==1.2.2",
+  "joblib==1.5.3",
+  "numpy==2.0.2",
+  "pandas==2.2.3",
+  "pyarrow==19.0.1",
+  "sentence-transformers==3.4.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.5"]
+
+[project.scripts]
+yipit-pipeline = "yipit_pipeline.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+pythonpath = ["src"]

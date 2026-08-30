@@ -1,4 +1,4 @@
-# YipitData Data Engineering Assignment — Solution Approach
+# YipitData Data Engineering Assignment — Data Architecture
 
 ## 1. Overview
 
@@ -32,7 +32,7 @@ The proposed implementation uses Python, pandas, PyArrow/Parquet, DuckDB, and se
 ├── company_metadata.json
 ├── tech_news.csv
 ├── README.md
-├── SOLUTION_APPROACH.md                # required Data Architecture Document
+├── DATA_ARCHITECTURE.md                # required Data Architecture Document
 ├── requirements.txt
 ├── pyproject.toml                     # optional packaging/tool configuration
 ├── src/

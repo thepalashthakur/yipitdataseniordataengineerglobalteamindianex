@@ -1,0 +1,42 @@
+{
+  "arr_parser_version": "1.0.0",
+  "category_mapping_version": "1.0.0",
+  "company_alias_version": "1.0.0",
+  "completed_at": "2026-08-30T10:44:25.049312+00:00",
+  "embedding": {
+    "backend": "sentence-transformers",
+    "dimension": 384,
+    "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "normalized": true
+  },
+  "inputs": {
+    "company_metadata.json": {
+      "rows": 21,
+      "sha256": "826788ca33a46cbe0d8219ab12583daff89e8786c1fdd839e6b0fec6cf3279ff"
+    },
+    "tech_news.csv": {
+      "rows": 750,
+      "sha256": "e3a42734ef79f169de3cc6c89e5dffadc8a931cd5659b7a0cd5412294b6f5cde"
+    }
+  },
+  "output_row_counts": {
+    "ai_articles_enriched": 113,
+    "bridge_article_similarity": 2250,
+    "data_quality_issue": 286,
+    "dim_company": 27,
+    "fact_arr_observation": 558,
+    "fact_article": 750
+  },
+  "pipeline_run_id": "57ec45a1-9a06-4385-9e42-2d255db54746",
+  "pipeline_version": "1.0.0",
+  "started_at": "2026-08-30T10:44:17.634980+00:00",
+  "status": "SUCCEEDED",
+  "validated_row_counts": {
+    "ai_articles_enriched": 113,
+    "bridge_article_similarity": 2250,
+    "data_quality_issue": 286,
+    "dim_company": 27,
+    "fact_arr_observation": 558,
+    "fact_article": 750
+  }
+}
