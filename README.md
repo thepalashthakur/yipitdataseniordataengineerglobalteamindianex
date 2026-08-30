@@ -157,7 +157,7 @@ ORDER BY company_id, observation_year, observation_quarter;
 
 ## Semantic and hybrid search
 
-Semantic search with SQL-style filters:
+Semantic search with parameterized DuckDB SQL filters followed by vector-similarity ranking:
 
 ```bash
 PYTHONPATH=src .venv/bin/python -m yipit_pipeline.cli search \
@@ -175,7 +175,6 @@ Find articles similar to an existing article:
 ```bash
 PYTHONPATH=src .venv/bin/python -m yipit_pipeline.cli search \
   --output-dir data/output \
-  --query ignored \
   --article-id ART0001 \
   --top-k 5
 ```
@@ -218,4 +217,3 @@ The test suite covers revenue formats and conversion, date formats and ambiguity
 The pipeline builds outputs in a temporary staging directory, validates the complete dataset, and publishes files only after successful materialization. Stable UUID5 identifiers are derived from business keys. Re-running identical inputs therefore updates the complete published state without creating duplicate articles, company entities, ARR observations, or similarity relationships.
 
 `pipeline_run.json` records source checksums and transformation/configuration versions. Production backfills and schema-evolution handling are described in [SOLUTION_APPROACH.md](SOLUTION_APPROACH.md).
-

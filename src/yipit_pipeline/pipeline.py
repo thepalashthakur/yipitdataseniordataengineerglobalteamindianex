@@ -126,7 +126,17 @@ def _build_company_dimension(
             "source_file": "company_metadata.json",
             "pipeline_run_id": run_id,
         }
-        row["record_hash"] = _stable_record_hash(row.get(field) for field in METADATA_FIELDS)
+        row["record_hash"] = _stable_record_hash(
+            [
+                row.get("founded_year"),
+                row.get("headquarters"),
+                row.get("employee_count"),
+                row.get("industry_raw"),
+                row.get("industry_standardized"),
+                row.get("is_public"),
+                row.get("stock_ticker"),
+            ]
+        )
         rows.append(row)
 
     known_ids = {row["company_id"] for row in rows}
@@ -242,7 +252,7 @@ def _write_duckdb(path: Path, tables: Mapping[str, pd.DataFrame]) -> None:
 
 def validate_outputs(output_dir: Path) -> Dict[str, int]:
     output_dir = Path(output_dir)
-    required = list(MODELED_TABLES.values()) + ["ai_articles_enriched.csv", "article_embeddings.npy", "article_embedding_index.csv", "analytics.duckdb", "pipeline_run.json"]
+    required = list(MODELED_TABLES.values()) + ["ai_articles_enriched.csv", "article_embeddings.npy", "article_embedding_index.csv", "embedding_manifest.json", "analytics.duckdb", "pipeline_run.json"]
     missing = [name for name in required if not (output_dir / name).exists()]
     if missing:
         raise ValueError("missing required outputs: {}".format(", ".join(missing)))
@@ -434,6 +444,11 @@ def run_pipeline(
                 "ai_articles_enriched": len(ai_export),
             },
         }
+        (staging_dir / "pipeline_run.json").write_text(json.dumps(run_manifest, indent=2, sort_keys=True), encoding="utf-8")
+
+        # Verify the complete staged dataset before changing the published state.
+        staged_validation_counts = validate_outputs(staging_dir)
+        run_manifest["validated_row_counts"] = staged_validation_counts
         (staging_dir / "pipeline_run.json").write_text(json.dumps(run_manifest, indent=2, sort_keys=True), encoding="utf-8")
 
         output_dir.mkdir(parents=True, exist_ok=True)

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
 import joblib
+import duckdb
 import numpy as np
 import pandas as pd
 
@@ -16,9 +17,16 @@ class ArticleSearchIndex:
         self.output_dir = Path(output_dir)
         self.articles = pd.read_csv(self.output_dir / "fact_article.csv")
         self.matrix = np.load(self.output_dir / "article_embeddings.npy")
+        self.article_index = pd.read_csv(self.output_dir / "article_embedding_index.csv")
         self.manifest = json.loads((self.output_dir / "embedding_manifest.json").read_text(encoding="utf-8"))
         if len(self.articles) != self.matrix.shape[0]:
             raise ValueError("article table and embedding matrix are not aligned")
+        if self.article_index["article_id"].astype(str).tolist() != self.articles["article_id"].astype(str).tolist():
+            raise ValueError("article embedding index and fact_article are not aligned")
+        self._embedding_row_by_article_id = {
+            str(row.article_id): int(row.embedding_row)
+            for row in self.article_index.itertuples(index=False)
+        }
         self._encoder = None
 
     def _encode_query(self, query_text: str) -> np.ndarray:
@@ -91,20 +99,51 @@ class ArticleSearchIndex:
         industries: Optional[Sequence[str]] = None,
         min_arr_usd: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
-        mask = pd.Series(True, index=self.articles.index)
-        dates = pd.to_datetime(self.articles["published_date"], errors="coerce")
+        conditions = ["1 = 1"]
+        parameters: List[Any] = []
         if start_date:
-            mask &= dates.ge(pd.Timestamp(start_date))
+            conditions.append("published_date >= CAST(? AS DATE)")
+            parameters.append(start_date)
         if end_date:
-            mask &= dates.le(pd.Timestamp(end_date))
+            conditions.append("published_date <= CAST(? AS DATE)")
+            parameters.append(end_date)
         if categories:
-            mask &= self.articles["category_standardized"].isin(list(categories))
+            category_values = list(categories)
+            conditions.append(
+                "category_standardized IN ({})".format(
+                    ", ".join("?" for _ in category_values)
+                )
+            )
+            parameters.extend(category_values)
         if industries:
-            mask &= self.articles["industry_standardized"].isin(list(industries))
+            industry_values = list(industries)
+            conditions.append(
+                "industry_standardized IN ({})".format(
+                    ", ".join("?" for _ in industry_values)
+                )
+            )
+            parameters.extend(industry_values)
         if min_arr_usd is not None:
-            mask &= pd.to_numeric(self.articles["arr_usd"], errors="coerce").gt(int(min_arr_usd))
+            conditions.append("arr_usd > ?")
+            parameters.append(int(min_arr_usd))
+
+        sql = """
+            SELECT article_id
+            FROM fact_article
+            WHERE {}
+            ORDER BY source_row_number
+        """.format(" AND ".join(conditions))
+        database_path = self.output_dir / "analytics.duckdb"
+        with duckdb.connect(str(database_path), read_only=True) as connection:
+            candidate_ids = [
+                str(row[0]) for row in connection.execute(sql, parameters).fetchall()
+            ]
+        candidate_indices = [
+            self._embedding_row_by_article_id[article_id]
+            for article_id in candidate_ids
+        ]
         query_vector = self._encode_query(query_text)
-        return self._rank(query_vector, self.articles.index[mask].tolist(), top_k)
+        return self._rank(query_vector, candidate_indices, top_k)
 
 
 def find_similar_articles(query_text: str, top_k: int = 5, output_dir: Path = Path("data/output")) -> List[Dict[str, Any]]:

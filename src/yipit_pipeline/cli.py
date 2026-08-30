@@ -27,14 +27,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     search_parser = subparsers.add_parser("search", help="perform semantic or hybrid search")
     search_parser.add_argument("--output-dir", type=Path, default=Path("data/output"))
-    search_parser.add_argument("--query", required=True)
+    query_group = search_parser.add_mutually_exclusive_group(required=True)
+    query_group.add_argument("--query")
+    query_group.add_argument("--article-id", help="rank against an existing article instead of query text")
     search_parser.add_argument("--top-k", type=int, default=5)
     search_parser.add_argument("--start-date")
     search_parser.add_argument("--end-date")
     search_parser.add_argument("--category", action="append", dest="categories")
     search_parser.add_argument("--industry", action="append", dest="industries")
     search_parser.add_argument("--min-arr-usd", type=int)
-    search_parser.add_argument("--article-id", help="rank against an existing article instead of query text")
     return parser
 
 
@@ -75,4 +76,3 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

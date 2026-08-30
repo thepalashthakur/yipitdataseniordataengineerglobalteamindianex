@@ -58,6 +58,21 @@ def test_full_pipeline_is_queryable_and_idempotent(tmp_path):
     assert results
     assert all("article_id" in result and "similarity_score" in result for result in results)
 
+    # Candidate filtering must come from DuckDB SQL, not the in-memory frame.
+    index.articles["category_standardized"] = "CORRUPTED_IN_MEMORY"
+    sql_filtered_results = index.hybrid_search(
+        "artificial intelligence model growth",
+        top_k=5,
+        categories=["AI_ML"],
+    )
+    assert sql_filtered_results
+    sql_filtered_ids = {result["article_id"] for result in sql_filtered_results}
+    duckdb_ai_ids = set(
+        pd.read_csv(output / "fact_article.csv")
+        .loc[lambda frame: frame["category_standardized"].eq("AI_ML"), "article_id"]
+    )
+    assert sql_filtered_ids <= duckdb_ai_ids
+
     observation_ids_before = set(arr["arr_observation_id"])
     second = run_pipeline(
         ROOT / "tech_news.csv",
@@ -69,4 +84,3 @@ def test_full_pipeline_is_queryable_and_idempotent(tmp_path):
     assert set(arr_after["arr_observation_id"]) == observation_ids_before
     assert not arr_after["arr_observation_id"].duplicated().any()
     assert first["inputs"] == second["inputs"]
-

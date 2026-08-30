@@ -767,8 +767,6 @@ pyarrow
 duckdb
 numpy
 sentence-transformers
-PyYAML
-pydantic
 pytest
 ```
 

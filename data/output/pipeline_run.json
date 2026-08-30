@@ -2,7 +2,7 @@
   "arr_parser_version": "1.0.0",
   "category_mapping_version": "1.0.0",
   "company_alias_version": "1.0.0",
-  "completed_at": "2026-08-30T10:40:33.511236+00:00",
+  "completed_at": "2026-08-30T10:44:25.049312+00:00",
   "embedding": {
     "backend": "sentence-transformers",
     "dimension": 384,
@@ -27,9 +27,9 @@
     "fact_arr_observation": 558,
     "fact_article": 750
   },
-  "pipeline_run_id": "ebc1fbcf-217e-4416-aefb-b9ece4615d24",
+  "pipeline_run_id": "57ec45a1-9a06-4385-9e42-2d255db54746",
   "pipeline_version": "1.0.0",
-  "started_at": "2026-08-30T10:40:07.634191+00:00",
+  "started_at": "2026-08-30T10:44:17.634980+00:00",
   "status": "SUCCEEDED",
   "validated_row_counts": {
     "ai_articles_enriched": 113,
